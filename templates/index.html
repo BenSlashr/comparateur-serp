@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="base-path" content="">
+    <title>Outil de comparaison de SERP | Agence SLASHR</title>
+    <link rel="stylesheet" href="/static/css/styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        // Déterminer dynamiquement le chemin de base
+        window.basePath = (function() {
+            // Méthode 1: Utiliser la méta-balise si disponible
+            const metaTag = document.querySelector('meta[name="base-path"]');
+            if (metaTag && metaTag.content && metaTag.content !== '{{ request.base_url }}') {
+                return metaTag.content.replace(/\/$/, '');
+            }
+            
+            // Méthode 2: Déterminer à partir de l'URL actuelle
+            const path = window.location.pathname;
+            // Trouver le chemin jusqu'au dossier contenant l'index.html
+            const lastSlashIndex = path.lastIndexOf('/');
+            if (lastSlashIndex > 0) {
+                return path.substring(0, lastSlashIndex);
+            }
+            
+            // Fallback: Utiliser la racine
+            return '';
+        })();
+        
+        // Fonction utilitaire pour construire les URLs d'API
+        window.getApiUrl = function(endpoint) {
+            return `${window.basePath}/api/${endpoint}`;
+        };
+        
+        // Fonction utilitaire pour construire les URLs des ressources statiques
+        window.getStaticUrl = function(path) {
+            return `${window.basePath}/static/${path}`;
+        };
+        
+        // Correction des URLs CSS pour les sous-dossiers
+        document.addEventListener('DOMContentLoaded', function() {
+            // Mettre à jour les liens CSS avec des chemins absolus
+            const cssLinks = document.querySelectorAll('link[rel="stylesheet"][href^="/static"]');
+            cssLinks.forEach(link => {
+                const originalHref = link.getAttribute('href');
+                if (originalHref.startsWith('/static')) {
+                    const newPath = originalHref.replace('/static/', '');
+                    link.setAttribute('href', window.getStaticUrl(newPath));
+                }
+            });
+        });
+    </script>
+</head>
+<body>
+    <nav class="main-nav">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <a href="https://outils.agence-slashr.fr/">
+                    <img src="https://agence-slashr.fr/wp-content/uploads/2023/10/slashr-logo-white.svg" alt="SLASHR Logo">
+                </a>
+            </div>
+            <div class="nav-links">
+                <a href="https://outils.agence-slashr.fr/agence-seo-a-lille" class="nav-link">Agence SEO à Lille</a>
+                <a href="https://outils.agence-slashr.fr/outils" class="nav-link">Tous les outils</a>
+                <a href="#" class="nav-link active">SERP Comparateur</a>
+            </div>
+        </div>
+    </nav>
+    
+    <div class="container">
+        <header>
+            <h1>Outil de comparaison de SERP</h1>
+            <p class="description">
+                Comparer les SERP vous permet d'identifier les URL communes pour différents mots-clés distincts. 
+                Cela vous aide à comprendre si vous devez créer un article ou deux.
+            </p>
+        </header>
+
+        <main>
+            <section class="keyword-section">
+                <h2>Sélectionnez vos mots-clés</h2>
+                <div class="keyword-inputs">
+                    <div class="keyword-input">
+                        <label for="keyword1">Entrez un mot-clé</label>
+                        <input type="text" id="keyword1" name="keyword1" required>
+                    </div>
+                    <div class="keyword-input">
+                        <label for="keyword2">Entrez un mot-clé</label>
+                        <input type="text" id="keyword2" name="keyword2">
+                    </div>
+                    <div class="keyword-input">
+                        <label for="keyword3">Entrez un mot-clé</label>
+                        <input type="text" id="keyword3" name="keyword3">
+                    </div>
+                    <div class="keyword-input">
+                        <label for="keyword4">Entrez un mot-clé</label>
+                        <input type="text" id="keyword4" name="keyword4">
+                    </div>
+                </div>
+                <div class="history-links">
+                    <a href="#" class="history-link">Ou sélectionnez un SERP de votre historique</a>
+                </div>
+            </section>
+
+            <section class="filters-section">
+                <h2>Vos filtres</h2>
+                <div class="active-filters" id="activeFilters">
+                    <span class="filter-tag" data-value="FR">France <i class="fas fa-times"></i></span>
+                    <span class="filter-tag" data-value="desktop">Desktop <i class="fas fa-times"></i></span>
+                </div>
+                
+                <div class="accordion">
+                    <div class="accordion-header">
+                        <span>Options avancées</span>
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <div class="accordion-content">
+                        <div class="filter-row">
+                            <div class="filter-group">
+                                <label for="country">Sélectionner un pays</label>
+                                <select id="country" name="country">
+                                    <option value="FR">France</option>
+                                    <option value="US">États-Unis</option>
+                                    <option value="GB">Royaume-Uni</option>
+                                    <option value="DE">Allemagne</option>
+                                    <option value="ES">Espagne</option>
+                                    <option value="IT">Italie</option>
+                                    <option value="CA">Canada</option>
+                                </select>
+                            </div>
+                            <div class="filter-group">
+                                <label for="location">Sélectionner une localité</label>
+                                <input type="text" id="location" name="location" placeholder="Commencez à taper...">
+                            </div>
+                        </div>
+                        
+                        <div class="filter-row">
+                            <div class="filter-group">
+                                <label for="search_engine">Moteur de recherche</label>
+                                <select id="search_engine" name="search_engine">
+                                    <option value="google.fr">France - google.fr</option>
+                                    <option value="google.com">US - google.com</option>
+                                    <option value="google.co.uk">UK - google.co.uk</option>
+                                    <option value="google.de">Allemagne - google.de</option>
+                                    <option value="google.es">Espagne - google.es</option>
+                                    <option value="google.it">Italie - google.it</option>
+                                    <option value="google.ca">Canada - google.ca</option>
+                                </select>
+                            </div>
+                            <div class="filter-group">
+                                <label for="num_results">Résultat SERP</label>
+                                <select id="num_results" name="num_results">
+                                    <option value="10">10</option>
+                                    <option value="20">20</option>
+                                    <option value="30">30</option>
+                                    <option value="50">50</option>
+                                    <option value="100">100</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="filter-row">
+                            <div class="filter-group">
+                                <label for="language">Sélectionner une langue</label>
+                                <select id="language" name="language">
+                                    <option value="fr">français</option>
+                                    <option value="en">anglais</option>
+                                    <option value="de">allemand</option>
+                                    <option value="es">espagnol</option>
+                                    <option value="it">italien</option>
+                                </select>
+                            </div>
+                            <div class="filter-group">
+                                <label>Sélectionner un canal</label>
+                                <div class="device-toggle">
+                                    <input type="radio" id="desktop" name="device" value="desktop" checked>
+                                    <label for="desktop">Desktop</label>
+                                    <input type="radio" id="mobile" name="device" value="mobile">
+                                    <label for="mobile">Mobile</label>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <button type="button" id="saveFilter" class="btn-filter">Enregistrer comme filtre</button>
+                    </div>
+                </div>
+            </section>
+
+            <button type="button" id="compareBtn" class="btn-compare">Comparer SERPs</button>
+
+            <section class="results-section" id="resultsSection" style="display: none;">
+                <div class="loading" id="loadingIndicator">
+                    <div class="spinner"></div>
+                    <p>Chargement des résultats...</p>
+                </div>
+                
+                <div class="results-content" id="resultsContent" style="display: none;">
+                    <div class="analysis-box">
+                        <h2>Analyse et recommandation</h2>
+                        <div class="stats-grid">
+                            <div class="stat-card">
+                                <h3>Similarité exacte</h3>
+                                <div class="stat-value" id="exactMatchPercentage">0%</div>
+                                <div class="stat-description">Des urls présentes sur les mêmes SERPS à la même position sont considérées comme exacte</div>
+                            </div>
+                            <div class="stat-card">
+                                <h3>URLs en commun</h3>
+                                <div class="stat-value" id="commonUrlsPercentage">0%</div>
+                                <div class="stat-description">Les URLs en commun sont sur plusieurs SERPs mais pas forcément à la même position</div>
+                            </div>
+                            <div class="stat-card">
+                                <h3>Titres en commun</h3>
+                                <div class="stat-value" id="commonTitlesPercentage">0%</div>
+                                <div class="stat-description">Un % plus faible que la similarité des urls montre que Google les modifie pour mieux coller à l'intention de recherche</div>
+                            </div>
+                            <div class="stat-card">
+                                <h3>Snippet en commun</h3>
+                                <div class="stat-value" id="commonSnippetsPercentage">0%</div>
+                                <div class="stat-description">Les meta-descriptions sont souvent différentes et permettent de saisir les nuances entre deux SERPs</div>
+                            </div>
+                        </div>
+                        <div class="stats-summary">
+                            <div class="summary-item">
+                                <span>Score de similarité global:</span>
+                                <strong id="similarityScore">0%</strong>
+                            </div>
+                            <div class="summary-item">
+                                <span>URLs totales analysées:</span>
+                                <strong id="totalUrls">0</strong>
+                            </div>
+                        </div>
+                        <div class="recommendation-box" id="recommendation">
+                            <!-- Recommendation will be inserted here -->
+                        </div>
+                    </div>
+                    
+                    <h2>Intentions de recherche globales</h2>
+                    <div class="search-intents" id="searchIntents">
+                        <!-- Global search intents will be inserted here -->
+                    </div>
+
+                    <h2>Résultats SERP avec intentions par page</h2>
+                    <div class="serp-results-grid" id="serpResultsGrid">
+                        <!-- SERP results will be inserted here -->
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <footer>
+            <p>&copy; 2025 SERP Comparateur. Tous droits réservés.</p>
+        </footer>
+    </div>
+
+    <!-- La console de logs a été supprimée, les logs sont maintenant uniquement dans le terminal -->
+
+    <script src="/static/js/script.js"></script>
+</body>
+</html>
